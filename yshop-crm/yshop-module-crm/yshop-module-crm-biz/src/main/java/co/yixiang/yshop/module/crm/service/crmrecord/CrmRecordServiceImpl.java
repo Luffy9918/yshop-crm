@@ -127,13 +127,20 @@ public class CrmRecordServiceImpl implements CrmRecordService {
         for(CrmRecordRespVO crmRecordRespVO : pageResult1.getList()){
             if(TypesEnum.CUSTOMER.getValue().equals(pageReqVO.getTypes())){
                 CrmCustomerDO customerDO = customerMapper.selectById(crmRecordRespVO.getTypesId());
-                crmRecordRespVO.setTypesName(customerDO.getName());
+                if (customerDO != null){
+                    crmRecordRespVO.setTypesName(customerDO.getName());
+                }
             }else if(TypesEnum.BUSINESS.getValue().equals(pageReqVO.getTypes())){
                 CrmBusinessDO crmBusinessDO = crmBusinessMapper.selectById(crmRecordRespVO.getTypesId());
-                crmRecordRespVO.setTypesName(crmBusinessDO.getName());
+                if(crmBusinessDO != null){
+                    crmRecordRespVO.setTypesName(crmBusinessDO.getName());
+                }
             }else if(TypesEnum.CLUES.getValue().equals(pageReqVO.getTypes())){
                 CrmCluesDO crmCluesDO = cluesMapper.selectById(crmRecordRespVO.getTypesId());
-                crmRecordRespVO.setTypesName(crmCluesDO.getName());
+                if(crmCluesDO != null){
+                    crmRecordRespVO.setTypesName(crmCluesDO.getName());
+                }
+
             }
 
         }
