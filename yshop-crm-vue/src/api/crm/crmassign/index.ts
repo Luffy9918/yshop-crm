@@ -12,6 +12,7 @@ export interface CustomerBatchAssignReqVO {
   customerIds: number[] // 客户ID列表
   staffId: number // 业务员ID
   reason?: string // 分配原因
+  assignType?: string // 分配类型: balance(平均分配), smart(智能分配)
 }
 
 // 自动分配 Request VO
@@ -19,6 +20,7 @@ export interface CustomerAutoAssignReqVO {
   customerId?: number // 客户ID（可选，用于单个客户自动分配）
   conditionType: string // 条件类型（如：city, level, industry等）
   conditionValue: string // 条件值
+  count?: number // 分配数量
 }
 
 // 客户分配 API

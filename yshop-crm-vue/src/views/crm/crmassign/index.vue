@@ -47,6 +47,14 @@
               </el-select>
             </el-form-item>
 
+            <el-form-item label="分配方式" prop="assignType">
+              <el-radio-group v-model="batchForm.assignType">
+                <el-radio label="balance">平均分配</el-radio>
+                <el-radio label="smart">智能分配</el-radio>
+              </el-radio-group>
+              <div class="form-tip">选择批量分配的方式</div>
+            </el-form-item>
+
             <el-form-item label="分配原因" prop="reason">
               <el-input
                 v-model="manualForm.reason"
@@ -116,6 +124,14 @@
                   :value="item.id"
                 />
               </el-select>
+            </el-form-item>
+
+            <el-form-item label="分配方式" prop="assignType">
+              <el-radio-group v-model="batchForm.assignType">
+                <el-radio label="balance">平均分配</el-radio>
+                <el-radio label="smart">智能分配</el-radio>
+              </el-radio-group>
+              <div class="form-tip">选择批量分配的方式</div>
             </el-form-item>
 
             <el-form-item label="分配原因" prop="reason">
@@ -245,7 +261,8 @@ const batchFormRef = ref()
 const batchForm = reactive<CustomerBatchAssignReqVO>({
   customerIds: [],
   staffId: undefined,
-  reason: ''
+  reason: '',
+  assignType: 'balance' // 默认平均分配
 })
 const batchRules = reactive({
   customerIds: [
@@ -259,7 +276,8 @@ const batchRules = reactive({
 const autoFormRef = ref()
 const autoForm = reactive<CustomerAutoAssignReqVO>({
   conditionType: 'balance',
-  conditionValue: ''
+  conditionValue: '',
+  count: 10 // 默认分配10个客户
 })
 const autoRules = reactive({
   conditionType: [{ required: true, message: '请选择分配规则', trigger: 'change' }],
@@ -325,11 +343,15 @@ const resetManualForm = () => {
 /** 重置批量分配表单 */
 const resetBatchForm = () => {
   batchFormRef.value?.resetFields()
+  // 重置后恢复默认值
+  batchForm.assignType = 'balance'
 }
 
 /** 重置自动分配表单 */
 const resetAutoForm = () => {
   autoFormRef.value?.resetFields()
+  // 重置后恢复默认值
+  autoForm.count = 10
 }
 
 /** 初始化 */
