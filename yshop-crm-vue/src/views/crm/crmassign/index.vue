@@ -47,13 +47,6 @@
               </el-select>
             </el-form-item>
 
-            <el-form-item label="分配方式" prop="assignType">
-              <el-radio-group v-model="manualForm.assignType">
-                <el-radio label="balance">平均分配</el-radio>
-                <el-radio label="smart">智能分配</el-radio>
-              </el-radio-group>
-              <div class="form-tip">选择批量分配的方式</div>
-            </el-form-item>
 
             <el-form-item label="分配原因" prop="reason">
               <el-input
@@ -127,7 +120,7 @@
             </el-form-item>
 
             <el-form-item label="分配方式" prop="assignType">
-              <el-radio-group v-model="manualForm.assignType">
+              <el-radio-group v-model="batchForm.assignType">
                 <el-radio label="balance">平均分配</el-radio>
                 <el-radio label="smart">智能分配</el-radio>
               </el-radio-group>
