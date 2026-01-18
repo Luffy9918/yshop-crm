@@ -48,7 +48,7 @@
             </el-form-item>
 
             <el-form-item label="分配方式" prop="assignType">
-              <el-radio-group v-model="batchForm.assignType">
+              <el-radio-group v-model="manualForm.assignType">
                 <el-radio label="balance">平均分配</el-radio>
                 <el-radio label="smart">智能分配</el-radio>
               </el-radio-group>
@@ -127,7 +127,7 @@
             </el-form-item>
 
             <el-form-item label="分配方式" prop="assignType">
-              <el-radio-group v-model="batchForm.assignType">
+              <el-radio-group v-model="manualForm.assignType">
                 <el-radio label="balance">平均分配</el-radio>
                 <el-radio label="smart">智能分配</el-radio>
               </el-radio-group>
@@ -228,7 +228,18 @@
 
 <script setup lang="ts">
 import { CustomerAssignApi, CustomerAssignReqVO, CustomerBatchAssignReqVO, CustomerAutoAssignReqVO } from '@/api/crm/crmassign'
-import { ElMessage } from 'element-plus'
+
+// 客户选项接口
+interface CustomerOption {
+  id: number
+  name: string
+}
+
+// 员工选项接口
+interface StaffOption {
+  id: number
+  nickname: string
+}
 
 defineOptions({ name: 'CrmAssign' })
 
@@ -239,10 +250,10 @@ const activeTab = ref('manual')
 const submitLoading = ref(false)
 
 // 客户列表 - TODO: 集成客户列表API
-const customerList = ref<any[]>([])
+const customerList = ref<CustomerOption[]>([])
 
 // 员工列表 - TODO: 集成员工列表API
-const staffList = ref<any[]>([])
+const staffList = ref<StaffOption[]>([])
 
 // 手动分配表单
 const manualFormRef = ref()
@@ -290,10 +301,11 @@ const handleManualAssign = async () => {
   try {
     submitLoading.value = true
     await CustomerAssignApi.assign(manualForm)
-    ElMessage.success('分配成功')
+    message.success('分配成功')
     resetManualForm()
   } catch (error) {
-    ElMessage.error('分配失败：' + (error.message || '未知错误'))
+    const errorMessage = error instanceof Error ? error.message : '未知错误'
+    message.error('分配失败：' + errorMessage)
   } finally {
     submitLoading.value = false
   }
@@ -305,10 +317,11 @@ const handleBatchAssign = async () => {
   try {
     submitLoading.value = true
     const result = await CustomerAssignApi.batchAssign(batchForm)
-    ElMessage.success(`成功分配 ${result} 个客户`)
+    message.success(`成功分配 ${result} 个客户`)
     resetBatchForm()
   } catch (error) {
-    ElMessage.error('分配失败：' + (error.message || '未知错误'))
+    const errorMessage = error instanceof Error ? error.message : '未知错误'
+    message.error('分配失败：' + errorMessage)
   } finally {
     submitLoading.value = false
   }
@@ -320,10 +333,11 @@ const handleAutoAssign = async () => {
   try {
     submitLoading.value = true
     await CustomerAssignApi.autoAssign(autoForm)
-    ElMessage.success('自动分配成功')
+    message.success('自动分配成功')
     resetAutoForm()
   } catch (error) {
-    ElMessage.error('分配失败：' + (error.message || '未知错误'))
+    const errorMessage = error instanceof Error ? error.message : '未知错误'
+    message.error('分配失败：' + errorMessage)
   } finally {
     submitLoading.value = false
   }
@@ -332,7 +346,7 @@ const handleAutoAssign = async () => {
 /** 预览分配结果 */
 const handlePreviewAssign = () => {
   // TODO: 实现预览功能
-  ElMessage.info('预览功能开发中...')
+  message.info('预览功能开发中...')
 }
 
 /** 重置手动分配表单 */
