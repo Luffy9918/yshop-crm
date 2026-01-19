@@ -28,6 +28,27 @@
       }
     },
     {
+      "path": "pages/customer/add",
+      "style": {
+        "navigationBarTitleText": "添加客户",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/customer/edit",
+      "style": {
+        "navigationBarTitleText": "编辑客户",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/customer/follow",
+      "style": {
+        "navigationBarTitleText": "添加跟进",
+        "navigationStyle": "custom"
+      }
+    },
+    {
       "path": "pages/mine/index",
       "style": {
         "navigationBarTitleText": "我的"
