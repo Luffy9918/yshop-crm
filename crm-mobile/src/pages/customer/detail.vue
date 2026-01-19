@@ -1,12 +1,12 @@
 <template>
   <view class="customer-detail-container">
     <!-- 客户基本信息 -->
-    <view class="customer-header">
+    <view class="customer-header" v-if="!loading">
       <view class="avatar-section">
-        <u-avatar :src="customer.avatar" size="140"></u-avatar>
+        <u-avatar :src="customer.avatar || '/static/default-avatar.png'" size="140"></u-avatar>
         <view class="info">
           <text class="name">{{ customer.name }}</text>
-          <u-tag :text="customer.status" :type="getStatusType(customer.status)"></u-tag>
+          <StatusTag :status="customer.status"></StatusTag>
         </view>
       </view>
 
@@ -26,8 +26,11 @@
       </view>
     </view>
 
+    <!-- 加载中 -->
+    <LoadingSpinner v-if="loading" :mask="false"></LoadingSpinner>
+
     <!-- 详细信息卡片 -->
-    <view class="info-section">
+    <view class="info-section" v-if="!loading">
       <view class="section-title">基本信息</view>
       <view class="info-card">
         <view class="info-item">
@@ -38,13 +41,13 @@
           <text class="label">数据来源</text>
           <text class="value">{{ customer.dataSource }}</text>
         </view>
-        <view class="info-item">
+        <view class="info-item" v-if="customer.product">
           <text class="label">意向产品</text>
-          <text class="value">{{ customer.product || '未选择' }}</text>
+          <text class="value">{{ customer.product }}</text>
         </view>
-        <view class="info-item">
+        <view class="info-item" v-if="customer.loanAmount">
           <text class="label">贷款金额</text>
-          <text class="value">{{ customer.loanAmount || '-' }}</text>
+          <text class="value">{{ customer.loanAmount }}</text>
         </view>
         <view class="info-item">
           <text class="label">创建时间</text>
@@ -58,7 +61,7 @@
     </view>
 
     <!-- 跟进记录 -->
-    <view class="follow-section">
+    <view class="follow-section" v-if="!loading">
       <view class="section-title">
         <text>跟进记录</text>
         <u-button size="mini" type="primary" @click="addFollow">添加</u-button>
@@ -77,7 +80,11 @@
         </view>
 
         <view v-if="followRecords.length === 0" class="empty-state">
-          <u-empty mode="list" text="暂无跟进记录"></u-empty>
+          <EmptyState
+            mainText="暂无跟进记录"
+            subText="快添加第一条跟进记录吧"
+            icon="file-text"
+          ></EmptyState>
         </view>
       </view>
     </view>
@@ -85,15 +92,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
+import StatusTag from '@/components/StatusTag/StatusTag.vue'
+import EmptyState from '@/components/EmptyState/EmptyState.vue'
+import LoadingSpinner from '@/components/LoadingSpinner/LoadingSpinner.vue'
+import { getCustomerDetail, getFollowRecords } from '@/api'
 
 // 客户信息
 const customer = reactive({
   id: 0,
   name: '',
   phone: '',
-  avatar: '/static/default-avatar.png',
+  avatar: '',
   status: '',
   dataSource: '',
   product: '',
@@ -103,37 +114,46 @@ const customer = reactive({
 })
 
 // 跟进记录
-const followRecords = ref([
-  {
-    id: 1,
-    title: '初次联系',
-    content: '客户对贷款产品感兴趣，已发送产品介绍',
-    createTime: '2024-01-18 10:30',
-    createBy: '业务员A'
-  }
-])
+const followRecords = ref<any[]>([])
+const loading = ref(true)
 
 onLoad((options: any) => {
   if (options.id) {
     customer.id = options.id
     loadCustomerDetail(options.id)
+    loadFollowRecords(options.id)
   }
 })
 
 // 加载客户详情
-function loadCustomerDetail(id: number) {
-  // TODO: 调用API获取客户详情
-  Object.assign(customer, {
-    id,
-    name: '张三',
-    phone: '138****1234',
-    status: '跟进中',
-    dataSource: '线上推广',
-    product: '信用贷款',
-    loanAmount: '50万',
-    createTime: '2024-01-15',
-    followCount: 3
-  })
+async function loadCustomerDetail(id: number) {
+  loading.value = true
+  try {
+    const res = await getCustomerDetail(id)
+    if (res.code === 0) {
+      Object.assign(customer, res.data)
+    }
+  } catch (error) {
+    console.error('加载客户详情失败:', error)
+    uni.showToast({
+      title: '加载失败',
+      icon: 'none'
+    })
+  } finally {
+    loading.value = false
+  }
+}
+
+// 加载跟进记录
+async function loadFollowRecords(customerId: number) {
+  try {
+    const res = await getFollowRecords(customerId)
+    if (res.code === 0) {
+      followRecords.value = res.data.list || []
+    }
+  } catch (error) {
+    console.error('加载跟进记录失败:', error)
+  }
 }
 
 // 拨打电话
@@ -166,17 +186,6 @@ function handleEdit() {
   uni.navigateTo({
     url: `/pages/customer/edit?id=${customer.id}`
   })
-}
-
-// 获取状态标签类型
-function getStatusType(status: string) {
-  const typeMap: Record<string, string> = {
-    '新线索': 'primary',
-    '跟进中': 'warning',
-    '已成交': 'success',
-    '流失': 'error'
-  }
-  return typeMap[status] || 'info'
 }
 </script>
 
