@@ -15,6 +15,8 @@
             prefixIcon="phone"
             :border="false"
             clearable
+            maxlength="11"
+            type="number"
           ></u-input>
         </u-form-item>
 
@@ -25,6 +27,8 @@
             prefixIcon="lock"
             :border="false"
             clearable
+            maxlength="6"
+            type="number"
           >
             <template #suffix>
               <u-button
@@ -39,9 +43,6 @@
         </u-form-item>
 
         <view class="form-options">
-          <u-checkbox v-model="formData.rememberPwd" shape="circle">
-            记住密码
-          </u-checkbox>
           <u-checkbox v-model="formData.agree" shape="circle">
             <text>我已阅读并同意</text>
             <text class="link">《用户协议》</text>
@@ -58,18 +59,27 @@
         </u-button>
       </u-form>
     </view>
+
+    <!-- 测试账号提示 -->
+    <view class="test-tips">
+      <text class="tips-title">测试账号</text>
+      <text class="tips-content">手机号: 13800138000</text>
+      <text class="tips-content">验证码: 123456</text>
+    </view>
   </view>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref, reactive, onUnmounted } from 'vue'
+import { useUserStore } from '@/store'
 import type { FormRules } from 'uview-plus'
+
+const userStore = useUserStore()
 
 // 表单数据
 const formData = reactive({
   phone: '',
   code: '',
-  rememberPwd: false,
   agree: false
 })
 
@@ -81,7 +91,7 @@ const rules: FormRules = {
   ],
   code: [
     { required: true, message: '请输入验证码', trigger: 'blur' },
-    { min: 4, max: 6, message: '验证码长度为4-6位', trigger: 'blur' }
+    { pattern: /^\d{4,6}$/, message: '验证码格式不正确', trigger: 'blur' }
   ]
 }
 
@@ -90,9 +100,18 @@ const loading = ref(false)
 const codeBtnText = ref('获取验证码')
 const codeBtnDisabled = ref(false)
 let countdown = 0
+let countdownTimer: number | null = null
+
+// 组件卸载时清除定时器
+onUnmounted(() => {
+  if (countdownTimer) {
+    clearInterval(countdownTimer)
+  }
+})
 
 // 发送验证码
-function sendCode() {
+async function sendCode() {
+  // 验证手机号
   if (!formData.phone) {
     uni.showToast({ title: '请先输入手机号', icon: 'none' })
     return
@@ -103,26 +122,54 @@ function sendCode() {
     return
   }
 
-  // TODO: 调用发送验证码API
-  uni.showToast({ title: '验证码已发送', icon: 'success' })
+  try {
+    // 调用发送验证码API
+    const res = await userStore.sendCode(formData.phone)
 
-  // 倒计时
+    if (res.code === 0) {
+      uni.showToast({ title: '验证码已发送', icon: 'success' })
+
+      // 开始倒计时
+      startCountdown()
+    } else {
+      uni.showToast({ title: res.msg || '发送失败', icon: 'none' })
+    }
+  } catch (error: any) {
+    uni.showToast({ title: error.msg || '发送失败，请重试', icon: 'none' })
+  }
+}
+
+// 开始倒计时
+function startCountdown() {
   codeBtnDisabled.value = true
   countdown = 60
-  const timer = setInterval(() => {
+
+  if (countdownTimer) {
+    clearInterval(countdownTimer)
+  }
+
+  countdownTimer = setInterval(() => {
     countdown--
     codeBtnText.value = `${countdown}秒后重试`
+
     if (countdown <= 0) {
-      clearInterval(timer)
+      if (countdownTimer) {
+        clearInterval(countdownTimer)
+        countdownTimer = null
+      }
       codeBtnText.value = '获取验证码'
       codeBtnDisabled.value = false
     }
-  }, 1000)
+  }, 1000) as unknown as number
 }
 
 // 登录
-function handleLogin() {
-  formRef.value?.validate().then(() => {
+async function handleLogin() {
+  try {
+    // 表单验证
+    await formRef.value?.validate()
+
+    // 验证用户协议
     if (!formData.agree) {
       uni.showToast({ title: '请先同意用户协议', icon: 'none' })
       return
@@ -130,19 +177,23 @@ function handleLogin() {
 
     loading.value = true
 
-    // TODO: 调用登录API
+    // 调用登录API
+    await userStore.login(formData.phone, formData.code)
+
+    uni.showToast({ title: '登录成功', icon: 'success' })
+
+    // 延迟跳转，让用户看到成功提示
     setTimeout(() => {
-      loading.value = false
-      // 模拟登录成功
-      uni.setStorageSync('token', 'mock-token-123456')
-      uni.showToast({ title: '登录成功', icon: 'success' })
       uni.switchTab({
         url: '/pages/index/index'
       })
-    }, 1000)
-  }).catch(() => {
-    // 表单验证失败
-  })
+    }, 500)
+  } catch (error: any) {
+    // 表单验证失败或登录失败
+    console.error('登录失败:', error)
+  } finally {
+    loading.value = false
+  }
 }
 </script>
 
@@ -165,6 +216,7 @@ function handleLogin() {
     height: 160rpx;
     border-radius: 32rpx;
     margin-bottom: 40rpx;
+    background: rgba(255, 255, 255, 0.2);
   }
 
   .title {
@@ -204,5 +256,29 @@ function handleLogin() {
   margin-top: 40rpx;
   height: 88rpx;
   font-size: 32rpx;
+}
+
+.test-tips {
+  margin-top: 60rpx;
+  padding: 30rpx;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 16rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.2);
+
+  .tips-title {
+    display: block;
+    font-size: 28rpx;
+    font-weight: bold;
+    color: #ffffff;
+    margin-bottom: 16rpx;
+  }
+
+  .tips-content {
+    display: block;
+    font-size: 24rpx;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 8rpx;
+    line-height: 1.6;
+  }
 }
 </style>

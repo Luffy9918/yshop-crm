@@ -4,7 +4,8 @@
 import { defineStore } from 'pinia'
 import { ref, reactive } from 'vue'
 import type { UserInfo } from '@/api'
-import { login as loginApi, getUserInfo as getUserInfoApi, setToken, clearToken } from '@/utils/request'
+import type { HttpResponse } from '@/utils/types'
+import { login as loginApi, sendCode as sendCodeApi, getUserInfo as getUserInfoApi, logout as logoutApi, setToken, clearToken } from '@/utils/request'
 
 export const useUserStore = defineStore('user', () => {
   // Token
@@ -20,32 +21,33 @@ export const useUserStore = defineStore('user', () => {
    * 登录
    */
   async function login(phone: string, code: string) {
-    try {
-      const response = await loginApi({ phone, code })
-      if (response.code === 0) {
-        const { accessToken, refreshToken, expiresAt, userInfo: info } = response.data
+    const response = await loginApi({ phone, code })
+    if (response.code === 0) {
+      const { accessToken, refreshToken, expiresAt, userInfo: info } = response.data
 
-        // 保存Token
-        setToken({
-          accessToken,
-          refreshToken,
-          expiresAt
-        })
+      // 保存Token
+      setToken({
+        accessToken,
+        refreshToken,
+        expiresAt
+      })
 
-        token.value = accessToken
+      token.value = accessToken
 
-        // 保存用户信息
-        Object.assign(userInfo, info)
+      // 保存用户信息
+      Object.assign(userInfo, info)
 
-        isLoggedIn.value = true
-
-        return true
-      }
-      return false
-    } catch (error) {
-      console.error('Login failed:', error)
-      return false
+      isLoggedIn.value = true
+    } else {
+      throw new Error(response.msg || '登录失败')
     }
+  }
+
+  /**
+   * 发送验证码
+   */
+  async function sendCode(phone: string): Promise<HttpResponse<{ success: boolean }>> {
+    return await sendCodeApi({ phone })
   }
 
   /**
@@ -66,18 +68,26 @@ export const useUserStore = defineStore('user', () => {
   /**
    * 退出登录
    */
-  function logout() {
-    clearToken()
-    token.value = ''
-    isLoggedIn.value = false
-    Object.keys(userInfo).forEach(key => {
-      delete userInfo[key as keyof UserInfo]
-    })
+  async function logout() {
+    try {
+      // 调用退出登录API
+      await logoutApi()
+    } catch (error) {
+      console.error('Logout API failed:', error)
+    } finally {
+      // 清除本地状态
+      clearToken()
+      token.value = ''
+      isLoggedIn.value = false
+      Object.keys(userInfo).forEach(key => {
+        delete userInfo[key as keyof UserInfo]
+      })
 
-    // 跳转到登录页
-    uni.reLaunch({
-      url: '/pages/login/index'
-    })
+      // 跳转到登录页
+      uni.reLaunch({
+        url: '/pages/login/index'
+      })
+    }
   }
 
   /**
@@ -98,6 +108,7 @@ export const useUserStore = defineStore('user', () => {
     userInfo,
     isLoggedIn,
     login,
+    sendCode,
     logout,
     fetchUserInfo,
     init

@@ -3,23 +3,23 @@
     <!-- 用户信息卡片 -->
     <view class="user-card">
       <view class="user-info">
-        <u-avatar :src="user.avatar" size="120"></u-avatar>
+        <u-avatar :src="userStore.userInfo.avatar || '/static/default-avatar.png'" size="120"></u-avatar>
         <view class="info">
-          <text class="name">{{ user.name }}</text>
-          <text class="role">{{ user.role }}</text>
+          <text class="name">{{ userStore.userInfo.name || '未设置' }}</text>
+          <text class="role">{{ userStore.userInfo.role || '业务员' }}</text>
         </view>
       </view>
       <view class="stats">
         <view class="stat-item">
-          <text class="value">{{ user.todayCalls }}</text>
+          <text class="value">{{ stats.todayCalls }}</text>
           <text class="label">今日拨打</text>
         </view>
         <view class="stat-item">
-          <text class="value">{{ user.monthCustomers }}</text>
+          <text class="value">{{ stats.monthCustomers }}</text>
           <text class="label">本月客户</text>
         </view>
         <view class="stat-item">
-          <text class="value">{{ user.monthDeals }}</text>
+          <text class="value">{{ stats.monthDeals }}</text>
           <text class="label">本月成交</text>
         </view>
       </view>
@@ -70,17 +70,30 @@
 </template>
 
 <script setup lang="ts">
-import { reactive } from 'vue'
+import { reactive, onMounted } from 'vue'
+import { useUserStore } from '@/store'
 
-// 用户信息
-const user = reactive({
-  avatar: '/static/default-avatar.png',
-  name: '业务员',
-  role: '销售专员',
-  todayCalls: 28,
-  monthCustomers: 156,
-  monthDeals: 12
+const userStore = useUserStore()
+
+// 用户统计数据
+const stats = reactive({
+  todayCalls: 0,
+  monthCustomers: 0,
+  monthDeals: 0
 })
+
+onMounted(() => {
+  loadUserStats()
+})
+
+// 加载用户统计数据
+async function loadUserStats() {
+  // TODO: 调用API获取用户统计数据
+  // 模拟数据
+  stats.todayCalls = 28
+  stats.monthCustomers = 156
+  stats.monthDeals = 12
+}
 
 // 跳转页面
 function goToPage(url: string) {
@@ -88,16 +101,17 @@ function goToPage(url: string) {
 }
 
 // 退出登录
-function handleLogout() {
+async function handleLogout() {
   uni.showModal({
     title: '提示',
     content: '确定要退出登录吗？',
-    success: (res) => {
+    success: async (res) => {
       if (res.confirm) {
-        uni.removeStorageSync('token')
-        uni.reLaunch({
-          url: '/pages/login/index'
-        })
+        try {
+          await userStore.logout()
+        } catch (error) {
+          console.error('Logout failed:', error)
+        }
       }
     }
   })
@@ -175,6 +189,12 @@ function handleLogout() {
     align-items: center;
     padding: 30rpx;
     border-bottom: 1rpx solid #ebeef5;
+    cursor: pointer;
+    transition: background-color 0.3s;
+
+    &:active {
+      background-color: #f8f8f8;
+    }
 
     &:last-child {
       border-bottom: none;

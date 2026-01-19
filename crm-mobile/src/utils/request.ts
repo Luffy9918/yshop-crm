@@ -3,6 +3,8 @@
  * 包含请求拦截、响应拦截、Token刷新等功能
  */
 import type { HttpResponse, RequestOptions, TokenInfo } from './types'
+// 重新导出 auth API
+export { login, sendCode, logout, getUserInfo } from '../api/auth'
 
 // API基础URL
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
