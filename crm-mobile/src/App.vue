@@ -6,9 +6,14 @@
 
 <script setup lang="ts">
 import { onLaunch, onShow, onHide } from '@dcloudio/uni-app'
+import { useUserStore } from '@/store'
+
+const userStore = useUserStore()
 
 onLaunch(() => {
   console.log('App Launch')
+  // 初始化用户状态
+  userStore.init()
   // 应用启动时检查登录状态
   checkLogin()
 })
@@ -22,8 +27,7 @@ onHide(() => {
 })
 
 function checkLogin() {
-  const token = uni.getStorageSync('token')
-  if (!token) {
+  if (!userStore.isLoggedIn) {
     // 未登录，跳转到登录页
     uni.redirectTo({
       url: '/pages/login/index'
