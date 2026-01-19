@@ -1,0 +1,32 @@
+{
+  "name": "crm-mobile",
+  "version": "1.0.0",
+  "description": "助贷CRM移动端 - UniApp应用",
+  "main": "src/main.ts",
+  "scripts": {
+    "dev": "uni",
+    "build:h5": "uni build --platform h5",
+    "build:mp-weixin": "uni build --platform mp-weixin",
+    "build:app": "uni build --platform app"
+  },
+  "dependencies": {
+    "vue": "^3.3.4",
+    "pinia": "^2.1.7",
+    "uview-plus": "^3.2.7",
+    "@dcloudio/uni-app": "^3.0.0-4020920240930001",
+    "@dcloudio/uni-components": "^3.0.0-4020920240930001",
+    "@dcloudio/uni-h5": "^3.0.0-4020920240930001",
+    "@dcloudio/uni-mp-weixin": "^3.0.0-4020920240930001",
+    "@dcloudio/uni-app-plus": "^3.0.0-4020920240930001"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@dcloudio/types": "^3.4.8",
+    "@dcloudio/vite-plugin-uni": "^3.0.0-4020920240930001",
+    "vite": "^5.0.0",
+    "typescript": "^5.3.0"
+  },
+  "uni-app": {
+    "scripts": {}
+  }
+}

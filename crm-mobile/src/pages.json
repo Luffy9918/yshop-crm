@@ -1,0 +1,69 @@
+{
+  "pages": [
+    {
+      "path": "pages/login/index",
+      "style": {
+        "navigationBarTitleText": "登录",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/index/index",
+      "style": {
+        "navigationBarTitleText": "首页",
+        "enablePullDownRefresh": true
+      }
+    },
+    {
+      "path": "pages/customer/list",
+      "style": {
+        "navigationBarTitleText": "客户列表",
+        "enablePullDownRefresh": true
+      }
+    },
+    {
+      "path": "pages/customer/detail",
+      "style": {
+        "navigationBarTitleText": "客户详情"
+      }
+    },
+    {
+      "path": "pages/mine/index",
+      "style": {
+        "navigationBarTitleText": "我的"
+      }
+    }
+  ],
+  "tabBar": {
+    "color": "#999999",
+    "selectedColor": "#409EFF",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "首页",
+        "iconPath": "static/tabbar/home.png",
+        "selectedIconPath": "static/tabbar/home-active.png"
+      },
+      {
+        "pagePath": "pages/customer/list",
+        "text": "客户",
+        "iconPath": "static/tabbar/customer.png",
+        "selectedIconPath": "static/tabbar/customer-active.png"
+      },
+      {
+        "pagePath": "pages/mine/index",
+        "text": "我的",
+        "iconPath": "static/tabbar/mine.png",
+        "selectedIconPath": "static/tabbar/mine-active.png"
+      }
+    ]
+  },
+  "globalStyle": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "助贷CRM",
+    "navigationBarBackgroundColor": "#F8F8F8",
+    "backgroundColor": "#F8F8F8"
+  }
+}
