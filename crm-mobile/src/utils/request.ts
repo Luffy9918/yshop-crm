@@ -3,6 +3,7 @@
  * 包含请求拦截、响应拦截、Token刷新等功能
  */
 import type { HttpResponse, RequestOptions, TokenInfo } from './types'
+import { handleApiError } from './errorHandler'
 // 重新导出 auth API
 export { login, sendCode, logout, getUserInfo } from '../api/auth'
 
@@ -180,10 +181,14 @@ export function request<T = any>(options: RequestOptions): Promise<HttpResponse<
           }
 
           // 其他业务错误
-          uni.showToast({
-            title: response.msg || '请求失败',
-            icon: 'none'
-          })
+          handleApiError(
+            {
+              code: response.code,
+              message: response.msg || '请求失败',
+              data: response.data
+            },
+            `API: ${options.method} ${options.url}`
+          )
           reject(response)
         }
 
@@ -196,25 +201,12 @@ export function request<T = any>(options: RequestOptions): Promise<HttpResponse<
           uni.hideLoading()
         }
 
-        // 处理网络错误
-        let errorMsg = '网络请求失败'
-
-        if (error.errMsg) {
-          if (error.errMsg.includes('timeout')) {
-            errorMsg = '请求超时，请检查网络'
-          } else if (error.errMsg.includes('fail')) {
-            errorMsg = '网络连接失败'
-          }
-        }
-
-        uni.showToast({
-          title: errorMsg,
-          icon: 'none'
-        })
+        // 使用全局错误处理器
+        handleApiError(error, `Network: ${options.method} ${options.url}`)
 
         reject({
-          code: -1,
-          msg: errorMsg,
+          code: error.statusCode || -1,
+          msg: error.errMsg || '网络请求失败',
           data: error
         })
       })

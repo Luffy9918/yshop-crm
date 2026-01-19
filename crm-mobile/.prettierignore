@@ -1,0 +1,29 @@
+# 依赖
+dist
+node_modules
+unpackage
+
+# 构建产物
+*.min.js
+*.min.css
+
+# 配置文件
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+
+# 静态资源
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+*.ico
+
+# 日志
+*.log
+
+# 其他
+.DS_Store
+.vscode
+.idea
